@@ -1,7 +1,6 @@
 from web3 import Web3
 import json
 
-# Connect to a local Ethereum node
 web3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
 
 with open('contract_details.json') as f:
