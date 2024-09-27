@@ -2,8 +2,8 @@ if __name__ == "__main__":
 
 
   
-  Shi_tomasi = ShiTomasi()
-  corners = shi_Tomasi.shi_tomasi_feature_extraction()
+    Shi_tomasi = ShiTomasi()
+    corners = shi_Tomasi.shi_tomasi_feature_extraction()
 
     fuzzy_extractor = FuzzyExtractor()
     biometric_key = fuzzy_extractor.generate_key(corners)
