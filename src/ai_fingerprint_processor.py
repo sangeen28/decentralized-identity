@@ -1,9 +1,22 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf  # For loading the CNN model
+
+# Load the pre-trained DnCNN model for denoising
+dncnn_model = tf.keras.models.load_model('path_to_dncnn_model.h5')
+
+def preprocess_image_with_cnn(image):
+    image_normalized = image.astype('float32') / 255.0
+    image_reshaped = np.expand_dims(image_normalized, axis=0)  # Add batch dimension
+    
+    denoised_image = dncnn_model.predict(image_reshaped)
+    
+    denoised_image = np.squeeze(denoised_image) * 255.0
+    return denoised_image.astype('uint8')
 
 def shi_tomasi_feature_extraction(image_path, max_corners=100, quality_level=0.01, min_distance=10):
-    # Load the input image in grayscale
+    # Load the input image in color
     img = cv2.imread(image_path)
     
     if img is None:
@@ -11,10 +24,10 @@ def shi_tomasi_feature_extraction(image_path, max_corners=100, quality_level=0.0
         return None
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    denoised_gray = preprocess_image_with_cnn(gray)
 
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-
-    corners = cv2.goodFeaturesToTrack(gray, maxCorners=max_corners, qualityLevel=quality_level, minDistance=min_distance)
+    corners = cv2.goodFeaturesToTrack(denoised_gray, maxCorners=max_corners, qualityLevel=quality_level, minDistance=min_distance)
     
     if corners is None:
         print("No corners detected.")
@@ -22,13 +35,13 @@ def shi_tomasi_feature_extraction(image_path, max_corners=100, quality_level=0.0
     
     corners = np.int0(corners)
 
+    # Draw the detected corners on the original image
     for i in corners:
         x, y = i.ravel()
         cv2.circle(img, (x, y), 5, (0, 255, 0), -1)
 
-    # Display the image with detected corners
     plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    plt.title("Shi-Tomasi Corner Detection")
+    plt.title("Shi-Tomasi Corner Detection with CNN Preprocessing")
     plt.show()
 
     return corners
